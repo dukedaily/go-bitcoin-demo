@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"time"
 )
 
@@ -61,28 +64,34 @@ func NewBlock(data string, prevHash []byte) *Block {
 	return &b
 }
 
-//提供计算区块哈希值的方法
-// func (b *Block) setHash() {
-// 	//比特币哈希算法：sha256
-// 	// data 是block各个字段拼成的字节流
+//绑定Serialize方法， gob编码
+func (b *Block) Serialize() []byte {
+	var buffer bytes.Buffer
 
-// 	// Join(a []string, sep string) string
-// 	//拼接三个切片，使用bytes.Join，接收一个二维的切片，使用一维切片拼接
-// 	// Join(s [][]byte, sep []byte) []byte
+	//编码器
+	encoder := gob.NewEncoder(&buffer)
+	//编码
+	err := encoder.Encode(b)
+	if err != nil {
+		fmt.Printf("Encode err:", err)
+		return nil
+	}
 
-// 	tmp := [][]byte{
-// 		uintToByte(b.Version), //将uint64转换为[]byte
-// 		b.PrevHash,
-// 		b.MerkleRoot,
-// 		uintToByte(b.TimeStamp),
-// 		uintToByte(b.Bits),
-// 		uintToByte(b.Nonce),
-// 		b.Hash,
-// 		b.Data,
-// 	}
-// 	//使用join方法，将二维切片转为1维切片
-// 	data := bytes.Join(tmp, []byte{})
+	return buffer.Bytes()
+}
 
-// 	hash := sha256.Sum256(data)
-// 	b.Hash = hash[:]
-// }
+//反序列化，输入[]byte，返回block
+func Deserialize(src []byte) *Block {
+	var block Block
+
+	//解码器
+	decoder := gob.NewDecoder(bytes.NewReader(src))
+	//解码
+	err := decoder.Decode(&block)
+	if err != nil {
+		fmt.Printf("decode err:", err)
+		return nil
+	}
+
+	return &block
+}
