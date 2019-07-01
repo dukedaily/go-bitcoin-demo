@@ -16,4 +16,11 @@ LABEL:
 	}
 
 	fmt.Println("over")
+
+	b1 := byte(0x00)
+	b2 := byte(0)
+
+	fmt.Printf("b1:%b\n", b1)
+	fmt.Printf("b2:%b\n", b2)
+
 }

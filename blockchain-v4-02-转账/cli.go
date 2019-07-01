@@ -20,6 +20,8 @@ const Usage = `
 	./blockchain print "打印区块链"
 	./blockchain getBalance <地址> "获取余额"
 	./blockchain send <FROM> <TO> <AMOUNT> <MINER> <DATA>
+	./blockchain createWallet "创建钱包"
+	./blockchain listAddress "列举所有的钱包地址"
 `
 
 // const Usage1 = "" +
@@ -72,7 +74,12 @@ func (cli *CLI) Run() {
 		miner := cmds[5]
 		data := cmds[6]
 		cli.send(from, to, amount, miner, data)
-
+	case "createWallet":
+		fmt.Println("创建钱包命令被调用!")
+		cli.createWallet()
+	case "listAddress":
+		fmt.Println("listAddress 被调用")
+		cli.listAddress()
 	default:
 		fmt.Println("输入参数无效，请检查!")
 		fmt.Println(Usage)
