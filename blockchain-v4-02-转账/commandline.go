@@ -123,3 +123,32 @@ func (cli *CLI) send(from, to string, amount float64, miner, data string) {
 
 	fmt.Println("添加区块成功，转账成功!")
 }
+
+func (cli *CLI) createWallet() {
+	wm := NewWalletManager()
+	if wm == nil {
+		fmt.Println("createWallet失败!")
+		return
+	}
+	address := wm.createWallet()
+
+	if len(address) == 0 {
+		fmt.Println("创建钱包失败！")
+		return
+	}
+
+	fmt.Println("新钱包地址为:", address)
+}
+
+func (cli *CLI) listAddress() {
+	wm := NewWalletManager()
+	if wm == nil {
+		fmt.Println(" NewWalletManager 失败!")
+		return
+	}
+
+	addresses := wm.listAddresses()
+	for _, address := range addresses {
+		fmt.Printf("%s\n", address)
+	}
+}
