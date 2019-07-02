@@ -17,14 +17,28 @@ type Transaction struct {
 }
 
 type TXInput struct {
-	Txid      []byte //这个input所引用的output所在的交易id
-	Index     int64  //这个input所引用的output在交易中的所以
-	ScriptSig string //付款人对当前交易(新交易，而不是引用的交易)的签名
+	Txid  []byte //这个input所引用的output所在的交易id
+	Index int64  //这个input所引用的output在交易中的所以
+
+	// ScriptSig string //付款人对当前交易(新交易，而不是引用的交易)的签名
+	ScriptSig []byte //对当前交易的签名
+	PubKey    []byte //付款人的公钥
 }
 
 type TXOutput struct {
-	ScriptPubk string  //收款人的公钥哈希，先理解为地址
-	Value      float64 //转账金额
+	ScriptPubKeyHash []byte  //收款人的公钥哈希
+	Value            float64 //转账金额
+}
+
+//由于没有办法直接将地址赋值给TXoutput，所以需要提供一个output的方法
+func newTXOutput(address string, amount float64) TXOutput {
+	output := TXOutput{Value: amount}
+
+	//通过地址获取公钥哈希值
+	pubKeyHash := getPubKeyHashFromAddress(address)
+	output.ScriptPubKeyHash = pubKeyHash
+
+	return output
 }
 
 // # 获取交易ID
@@ -57,8 +71,12 @@ func NewCoinbaseTx(miner /*挖矿人*/ string, data string) *Transaction {
 	//挖矿交易不需要签名，所以这个签名字段可以书写任意值，只有矿工有权利写
 	//中本聪：写的创世语
 	//现在都是由矿池来写，写自己矿池的名字
-	input := TXInput{Txid: nil, Index: -1, ScriptSig: data}
-	output := TXOutput{Value: reward, ScriptPubk: miner}
+	input := TXInput{Txid: nil, Index: -1, ScriptSig: nil, PubKey: []byte(data)}
+
+	//创建output
+	// output := TXOutput{Value: reward, ScriptPubk: miner}
+	output := newTXOutput(miner, reward)
+
 	timeStamp := time.Now().Unix()
 
 	tx := Transaction{
@@ -85,6 +103,25 @@ func (tx *Transaction) isCoinbaseTx() bool {
 //创建普通交易
 // 1. from/*付款人*/,to/*收款人*/,amount输入参数/*金额*/
 func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transaction {
+	//钱包就是在这里使用的，from=》钱包里面找到对应的wallet-》私钥-》签名
+	wm := NewWalletManager()
+	if wm == nil {
+		fmt.Println("打开钱包失败!")
+		return nil
+	}
+
+	// 钱包里面找到对应的wallet
+	wallet, ok := wm.Wallets[from]
+	if !ok {
+		fmt.Println("没有找到付款人地址对应的私钥!")
+		return nil
+	}
+
+	fmt.Println("找到付款人的私钥和公钥，准备创建交易...")
+	// priKey := wallet.PriKey //私钥签名阶段使用，暂且注释掉
+	pubKey := wallet.PubKey
+	//我们的所有output都是由公钥哈希锁定的，所以去查找付款人能够使用的output时，也需要提供付款人的公钥哈希值
+	pubKeyHash := getPubKeyHashFromPubKey(pubKey)
 
 	// 2. 遍历账本，找到from满足条件utxo集合（3），返回这些utxo包含的总金额(15)
 
@@ -94,7 +131,8 @@ func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transactio
 	var retValue float64
 
 	//遍历账本，找到from能够使用utxo集合,以及这些utxo包含的钱
-	spentUTXO, retValue = bc.findNeedUTXO(from, amount)
+	// spentUTXO, retValue = bc.findNeedUTXO(from, amount)
+	spentUTXO, retValue = bc.findNeedUTXO(pubKeyHash, amount)
 	// map[0x222] = []int{0}
 	// map[0x333] = []int{0,1}
 
@@ -111,19 +149,21 @@ func NewTransaction(from, to string, amount float64, bc *BlockChain) *Transactio
 	for txid, indexArray := range spentUTXO {
 		//遍历下标, 注意value才是我们消耗的output的下标
 		for _, i := range indexArray {
-			input := TXInput{[]byte(txid), i, from}
+			input := TXInput{Txid: []byte(txid), Index: i, ScriptSig: nil, PubKey: pubKey}
 			inputs = append(inputs, input)
 		}
 	}
 
 	// 5. 拼接outputs
 	// > 创建一个属于to的output
-	output1 := TXOutput{to, amount}
+	//创建给收款人的output
+	output1 := newTXOutput(to, amount)
 	outputs = append(outputs, output1)
 
 	// > 如果总金额大于需要转账的金额，进行找零：给from创建一个output
 	if retValue > amount {
-		output2 := TXOutput{from, retValue - amount}
+		// output2 := TXOutput{from, retValue - amount}
+		output2 := newTXOutput(from, retValue-amount)
 		outputs = append(outputs, output2)
 	}
 
