@@ -10,28 +10,28 @@ import (
 func main() {
 	err := test2()
 	if err != nil {
-		fmt.Printf("err +v :%+v\n", err)
-		fmt.Printf("err :%v\n", err)
+		// fmt.Println("err:", err)
+		fmt.Printf("err :%+v\n", err)
 	}
+
+	fmt.Println("Hello world")
 }
 
 func test2() error {
 	err := test1()
 	if err != nil {
-		// return errors.WithMessage(err, "test2")
-		return errors.WithStack(err)
+		return errors.WithMessage(err, "test2")
 		// return errors.Wrap(err, "test2")
-		return err
-
-	}
-	return err
+		// return errors.New("hello")
+	
+	return nil
 }
 
 func test1() error {
-	_, err := os.Open("hello.txt")
+	_, err := os.Open("helloworld.txt")
 	if err != nil {
-		return errors.WithMessage(err, "test1")
-		// return err
+		return errors.Wrap(err, "test1")
 	}
+
 	return nil
 }
