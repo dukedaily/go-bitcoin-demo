@@ -26,7 +26,8 @@
 
 ## 扫码入群
 
-<img src="assets/image-20220810134215759.png" alt="image-20220810134215759" align="left"  style="zoom: 25%;" />
+<img src="assets/image-20220810134215759.png" alt="image-20220810134215759" width="200" height="230" />
+
 
 ## 安装
 
