@@ -7,8 +7,8 @@
 
 ## 项目资源
 
-- 油管视频：https://www.youtube.com/channel/UCSc6tGnLIFvVMXs-ilDyb4A/videos
-- B站视频：https://space.bilibili.com/102710441/channel/seriesdetail?sid=2540263
+- 教程：[油管视频](https://www.youtube.com/watch?v=Wpf5KkgzElc&list=PLO_KaIZjoik9oY-Rs9BsDkHY2RJy7WcE-)
+- 教程：[B站视频](https://www.bilibili.com/video/BV1EY4y1c7Yq/?spm_id_from=333.999.0.0&vd_source=42fe91bf6d16ec8841b22ea520184d76)
 - 配套教程：见docs目录
 
 ## 关于作者
@@ -17,12 +17,6 @@
 
 - 微信：Adugii
 - Email：[dukemecn@gmail.com](mailto:dukemecn@gmail.com)
-
-## 乐捐Donate
-
-- ETH：0x24DFc2e2e9b73Be1f8cCbdB66642858466e590fC
-- ens：dukedu.eth
-- BTC：38GqvS398GskBX39kijX8ST1tnjJhPzJ1V
 
 ## 扫码入群
 
